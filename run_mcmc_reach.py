@@ -1,3 +1,5 @@
+# this script will load one set of REACH data, and attempt to fit it using and MCMC, assuming a radiometer noise only. 
+
 import os
 import numpy as np
 import ephem

@@ -1,3 +1,7 @@
+# This data set loads 3-4 REACH data sets and fits them using a joint-likelihood. 
+# Radiometer noise is assumed. 
+# Note that the date and integration time need to be changed. 
+
 import os
 import numpy as np
 import ephem

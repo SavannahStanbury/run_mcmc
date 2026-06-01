@@ -1,3 +1,5 @@
+# this script will generate data, ass a systematic error, and fit the data using an MCMC with a free nuisance parameter.
+
 import os
 import numpy as np
 import ephem

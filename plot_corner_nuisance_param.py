@@ -5,7 +5,7 @@ import os
 
 # set directory for data input/output
 #directory = "new_data/noise_param/case4.5"
-directory = 'erb_pipeline/obs_data_LST_6.0/lst_6.0_median/nuisance_2'#"testing_og_code/tR_6"#"testing_og_code/sub_tR/5_param_fit_with_error/case_4" #"new_data/sys_error/A_0.05"
+directory = 'erb_pipeline/obs_data_LST_6.0/lst_6.0_median/3_data_sets_nuisance'#"testing_og_code/tR_6"#"testing_og_code/sub_tR/5_param_fit_with_error/case_4" #"new_data/sys_error/A_0.05"
 # true values for comparison
 steps = '50k'
 discard = '20k'

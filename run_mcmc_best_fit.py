@@ -1,3 +1,5 @@
+# this code will simulate data, add radiometer noise, then fit that data using MCMC. 
+
 import os
 import numpy as np
 import ephem
@@ -7,7 +9,6 @@ import emcee
 import corner
 import matplotlib.cm as cm
 from multiprocessing import Pool
-import bean_functions as bf
 import reach_beam_script as bm
 import mcmc_funcs as mf
 

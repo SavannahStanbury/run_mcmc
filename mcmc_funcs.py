@@ -11,7 +11,6 @@ from matplotlib import rc
 from scipy.integrate import quad
 from astropy.time import Time
 from scipy.interpolate import interp1d
-import bean_functions as bf
 import plot_beam_reach as bm
 #import reach_beam_script as bm
 
@@ -325,7 +324,7 @@ def compute_high_lat_haslam(precomputed, tR, beta_R, beta_HG):
 
 def prepare_high_lat_haslam(nside, observer, freqs, freq_0, lst, use_beam=True, save_plots=False):
     #print("Loading Haslam map...")
-    haslam_408_512_map = hp.read_map("gsm2016.fits")#("haslam408.fits")
+    haslam_408_512_map = hp.read_map("haslam408.fits")
     #print(f"Original map size: {len(haslam_408_512_map)} pixels")
 
     haslam_map = hp.ud_grade(haslam_408_512_map, nside)
@@ -450,8 +449,8 @@ def compute_high_lat_haslam(precomputed, tR, beta_R, beta_HG, save_plots=False):
 
 #############################   THIS MAKES & FITS THE LOW LATITUDE DATA USING 2 SPIX #############################################
 
-def compute_low_latitude_components_multispix(nside, observer, freqs, lst, threshold=100.0, use_beam=True):
-    haslam_408_512_map = hp.read_map("gsm2016.fits")#("haslam408.fits")
+def compute_low_latitude_components_multispix(nside, observer, freqs, lst, threshold, use_beam=True):
+    haslam_408_512_map = hp.read_map("haslam408.fits")
     haslam_map = hp.ud_grade(haslam_408_512_map, nside)
     celestial_haslam = rotator_GC.rotate_map_pixel(haslam_map)
 

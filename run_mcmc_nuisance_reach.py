@@ -1,3 +1,8 @@
+# this script will load REACH data, and fit the data using an MCMC with a free nuisance parameter. 
+# 
+# If 'load_data' is selected, it loads one set of data, and assumes radiometer equation noise 
+#If 'load_multiple_data_sets' is selected, it will load three data sets, find the mean spectrum, and assume that spectrums standard deviation as noise. 
+
 import os
 import numpy as np
 import ephem
@@ -15,7 +20,7 @@ seed_noise = 19
 n_steps = 40000
 
 # ----------------- output directory -----------------
-base_dir = "erb_pipeline/obs_data_LST_6.0/lst_6.0_median/3_data_sets_nuisance"
+base_dir = "erb_pipeline/obs_data_LST_6.0/lst_6.0_median/3_data_sets_nuisance_stddev"
 os.makedirs(base_dir, exist_ok=True)
 
 # ----------------- data directory -----------------
@@ -58,75 +63,52 @@ seed_pos = 40
 # ----------------- load data -----------------
 #y = np.load(os.path.join(data_dir,"median_spectrum_lst_6.0.npy"))
 
+#sigma = y / np.sqrt(1e6 * 3600 * int_time)
 # ----------------- load multiple datasets -----------------
 y1 = np.load(os.path.join(data_dir, "data_06.npy"))
 y2 = np.load(os.path.join(data_dir, "data_07.npy"))
 y3 = np.load(os.path.join(data_dir, "data_08.npy"))
 
-# stack and take frequency-wise median
-data_stack = np.vstack([y1, y2, y3])   # shape: (3, nfreq)
-y = np.median(data_stack, axis=0)[:71]
+# stack spectra (shape: 3 x nfreq)
+data_stack = np.vstack([y1, y2, y3])
 
+# --- statistics across realizations ---
+y_mean = np.mean(data_stack, axis=0)
+y_std  = np.std(data_stack, axis=0)
+y_rms  = np.sqrt(np.mean(data_stack**2, axis=0))
+
+# truncate to first 71 frequencies (if needed)
+y = y_mean[:71]
+y_std  = y_std[:71]
+y_rms  = y_rms[:71]
 # same integration time used to generate data
 int_time = (11.2/60)
 
 print(f"Intergration Time: {int_time} hours")
+print(f"Std Dev: {y_std}")
+print(f"RMS: {y_rms}")
 
 np.random.seed(seed_noise)
 
-sigma = y / np.sqrt(1e6 * 3600 * int_time)
+sigma = y_std#y / np.sqrt(1e6 * 3600 * int_time)
 
 # ----------------- precompute -----------------
-precomp_HG = mf.prepare_high_lat_haslam(
-    nside,
-    reach,
-    freqs,
-    freq_0,
-    lst,
-    use_beam=True
-)
+precomp_HG = mf.prepare_high_lat_haslam(nside, reach, freqs, freq_0, lst, use_beam=True)
 
-precomp_LG = mf.compute_low_latitude_components_multispix(
-    nside,
-    reach,
-    freqs,
-    lst,
-    threshold=thrsh,
-    use_beam=True
-)
+precomp_LG = mf.compute_low_latitude_components_multispix(nside,reach, freqs, lst, threshold=thrsh, use_beam=True)
 
 # ----------------- forward model -----------------
 def model(theta):
 
     beta_Gal, tR, beta_R, beta_plane, beta_outer = theta[:5]
 
-    high = mf.compute_high_lat_haslam(
-        precomp_HG,
-        tR,
-        beta_R,
-        beta_Gal
-    )
+    high = mf.compute_high_lat_haslam(precomp_HG, tR, beta_R, beta_Gal )
 
-    radio = mf.compute_radio_excess(
-        freqs,
-        tR,
-        freq_0,
-        beta_R
-    )
+    radio = mf.compute_radio_excess(freqs, tR, freq_0, beta_R)
 
-    low_outer = mf.compute_low_latitude_outer(
-        freqs,
-        beta_outer,
-        precomp_LG,
-        use_beam=True
-    )
+    low_outer = mf.compute_low_latitude_outer(freqs, beta_outer, precomp_LG, use_beam=True)
 
-    low_plane = mf.compute_low_latitude_plane(
-        freqs,
-        beta_plane,
-        precomp_LG,
-        use_beam=True
-    )
+    low_plane = mf.compute_low_latitude_plane(freqs, beta_plane, precomp_LG, use_beam=True)
 
     total = high + radio + low_outer + low_plane
 
@@ -149,20 +131,9 @@ plt.plot(freqs, radio_excess, label="Radio Excess")
 plt.plot(freqs, low_plane, label="Low Lat Plane")
 plt.plot(freqs, low_outer, label="Low Lat Outer")
 
-plt.plot(
-    freqs,
-    y_tot,
-    label="Total (model)",
-    linestyle="--",
-    linewidth=2
-)
+plt.plot(freqs, y_tot, label="Total (model)", linestyle="--", linewidth=2)
 
-plt.plot(
-    freqs,
-    y,
-    label="Observed (loaded)",
-    alpha=0.7
-)
+plt.plot(freqs, y, label="Observed (loaded)", alpha=0.7)
 
 plt.xlabel("Frequency (MHz)")
 plt.ylabel("Temperature (K)")
@@ -170,10 +141,7 @@ plt.ylabel("Temperature (K)")
 plt.legend()
 plt.tight_layout()
 
-plt.savefig(
-    os.path.join(base_dir, "data_components.png"),
-    dpi=300
-)
+plt.savefig(os.path.join(base_dir, "data_components.png"), dpi=300)
 
 plt.close()
 
@@ -186,24 +154,15 @@ def log_likelihood(theta, y, freqs):
 
     sigma2 = sigma**2 + nuisance**2
 
-    return -0.5 * np.sum(
-        (y - model_tot)**2 / sigma2 +
-        np.log(sigma2)
-    )
+    return -0.5 * np.sum((y - model_tot)**2 / sigma2 + np.log(sigma2))
 
 # ----------------- prior -----------------
 def log_prior(theta):
 
     beta_Gal, tR, beta_R, beta_plane, beta_outer, nuisance = theta
 
-    if (
-        2.0 < beta_Gal < 3.0 and
-        0 < tR < 50 and
-        2.0 < beta_R < 3.0 and
-        2.0 < beta_plane < 3.0 and
-        2.0 < beta_outer < 3.0 and
-        0 < nuisance < 150
-    ):
+    #if (2.0 < beta_Gal < 3.0 and 0 < tR < 50 and 2.0 < beta_R < 3.0 and 2.0 < beta_plane < 3.0 and 2.0 < beta_outer < 3.0 and 0 < nuisance < 150):
+    if (2.0 < beta_Gal < 3.0 and 0 < tR < 50 and 2.0 < beta_R < 3.0 and 2.0 < beta_plane < 3.0 and 2.0 < beta_outer < 3.0 and 0 < nuisance < 150):
         return 0.0
 
     return -np.inf
@@ -232,27 +191,14 @@ start_time = time.time()
 
 with Pool(30) as pool:
 
-    sampler = emcee.EnsembleSampler(
-        nwalkers,
-        ndim,
-        log_probability,
-        args=(y, freqs),
-        pool=pool
-    )
+    sampler = emcee.EnsembleSampler(nwalkers, ndim, log_probability, args=(y, freqs), pool=pool)
 
-    sampler.run_mcmc(
-        pos,
-        n_steps,
-        progress=True
-    )
+    sampler.run_mcmc(pos, n_steps, progress=True)
 
 # ----------------- save outputs -----------------
 chain = sampler.get_chain()
 
-np.save(
-    os.path.join(base_dir, "chain.npy"),
-    chain
-)
+np.save(os.path.join(base_dir, "chain.npy"),chain)
 
 # ----------------- chain plot -----------------
 labels = [
@@ -264,11 +210,7 @@ labels = [
     "nuisance"
 ]
 
-fig, axes = plt.subplots(
-    len(labels),
-    figsize=(10, 7),
-    sharex=True
-)
+fig, axes = plt.subplots(len(labels),figsize=(10, 7),sharex=True)
 
 colors = [
     cm.viridis(x)

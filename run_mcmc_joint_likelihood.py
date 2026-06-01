@@ -1,3 +1,6 @@
+# This script will load multiple data sets and fit using a joint likelihood mcmc. The data sets and their noise should be precomputed from the single likelihood script.
+# Note that the date and integration time for each data set should be changed. 
+
 import os
 import numpy as np
 import ephem
