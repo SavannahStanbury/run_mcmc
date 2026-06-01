@@ -1,0 +1,30 @@
+# python junk
+__pycache__/
+*.pyc
+
+# ---- ignore only big/generated folders ----
+comparing_models/
+data/
+fits/
+images/
+npy_files/
+regional_plots/
+scripts/
+single_likelihood_timed/
+walker_batches/
+erb_pipeline/
+run_mcmc/
+mcmc_fit/
+joint_likelihood/
+testing_model/
+testing_og_code/
+Trial/
+simulated_data/
+sim_data_sub/
+trying_to_fit/
+test_beam/
+new_data/
+debug_img/
+
+# optional: notebooks you don't want tracked
+*.ipynb_checkpoints/
