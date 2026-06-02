@@ -20,8 +20,8 @@ REACH.lat, REACH.long, REACH.elevation = '-30:50:19.5', '21:22:29.71', 1151
 freqs=np.arange(50.,101,1) # in MHz
 
 #REACH.date = '2024/02/11 19:09:04:52'
-REACH.date = '2024/02/11 14:09:54.02'
-time = REACH.date
+#REACH.date = '2024/02/11 14:09:54.02'
+#time = REACH.date
 '''
 #time vector
 REACH.date = '2018/4/15 20:30'  #UTC date does not support localtime

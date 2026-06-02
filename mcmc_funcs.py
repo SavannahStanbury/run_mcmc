@@ -11,8 +11,8 @@ from matplotlib import rc
 from scipy.integrate import quad
 from astropy.time import Time
 from scipy.interpolate import interp1d
-import plot_beam_reach as bm
-#import reach_beam_script as bm
+#import plot_beam_reach as bm
+import test_beam as bm
 
 # Disable LaTeX in Matplotlib
 plt.rcParams['font.family'] = 'DejaVu Sans'

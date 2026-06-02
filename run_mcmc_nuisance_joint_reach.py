@@ -139,14 +139,7 @@ def log_prior(theta):
 
     beta_Gal, tR, beta_R, beta_plane, beta_outer, nuisance = theta
 
-    if (
-        1.5 < beta_Gal < 3.5 and
-        0 < tR < 30 and
-        1.5 < beta_R < 3.5 and
-        1.5 < beta_plane < 3.5 and
-        1.5 < beta_outer < 3.5 and
-        0 < nuisance < 150
-    ):
+    if (1.5 < beta_Gal < 3.5 and 0 < tR < 30 and 1.5 < beta_R < 3.5 and 1.5 < beta_plane < 3.5 and 1.5 < beta_outer < 3.5 and 0 < nuisance < 150 ):
         return 0.0
 
     return -np.inf

@@ -9,11 +9,11 @@ import emcee
 import corner
 import matplotlib.cm as cm
 from multiprocessing import Pool
-import reach_beam_script as bm
+#import reach_beam_script as bm
 import mcmc_funcs as mf
 
 # ----------------- set base directory -----------------
-base_dir = "mcmc_fit/seed_5/"
+base_dir = "test_beam/new_reach_beam_130"
 os.makedirs(base_dir, exist_ok=True)
 
 thrsh = 25
@@ -29,7 +29,7 @@ reach.elevation = 1151
 
 # ----------------- parameters -----------------
 nside = 64
-freqs = np.arange(50., 121., 1)
+freqs = np.arange(50., 131., 1)
 
 beta_Gal = 2.5
 tR = 14
@@ -96,11 +96,11 @@ np.save(os.path.join(base_dir, "noise.npy"), noise)
 # ----------------- plot components -----------------
 plt.figure(figsize=(10, 6))
 plt.plot(freqs, high_galactic_lat, label="High Galactic Lat")
-plt.plot(freqs, radio_excess, label="Radio Excess")
+plt.plot(freqs, radio_excess, label="Radio Background")
 plt.plot(freqs, low_plane, label="Low Lat Plane")
 plt.plot(freqs, low_outer, label="Low Lat Outer")
-plt.plot(freqs, y_tot, label="Total (no noise)", linestyle="--", linewidth=2)
-plt.plot(freqs, y, label="Observed (with noise)", alpha=0.7)
+plt.plot(freqs, y_tot, label="Sum", linestyle="--", linewidth=2)
+plt.plot(freqs, y, label="Simulates Data", alpha=0.7)
 
 plt.xlabel("Frequency (MHz)")
 plt.ylabel("Temperature (K)")
@@ -108,7 +108,7 @@ plt.legend()
 plt.tight_layout()
 plt.savefig(os.path.join(base_dir, "data_components.png"), dpi=300)
 plt.close()
-
+'''
 # ----------------- log-likelihood and prior -----------------
 def log_likelihood(theta, y, freqs):
     model_tot, _, _, _, _ = model(theta)
@@ -191,3 +191,4 @@ with open(log_path, 'w') as f:
     f.write(f"log(prob) at truth = {logp:.3f}\n")
     f.write(f"log(prior) = {log_prior(initial):.3f}\n")
     f.write(f"log(likelihood) = {log_likelihood(initial, y, freqs):.3f}\n")
+    '''
